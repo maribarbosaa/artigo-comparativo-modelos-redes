@@ -1,0 +1,27 @@
+{
+  "status": "pending",
+  "note": "Substitua pelos resultados reais do experimento.",
+  "models": {
+    "Árvore de Decisão": {
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "train_seconds": null,
+      "predict_seconds": null
+    },
+    "Random Forest": {
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "train_seconds": null,
+      "predict_seconds": null
+    },
+    "XGBoost": {
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "train_seconds": null,
+      "predict_seconds": null
+    }
+  }
+}
