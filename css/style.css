@@ -177,7 +177,12 @@ tbody tr:last-child td { border-bottom: 0; }
 .authors-section { background: #10182c; color: #fff; }
 .authors-section .eyebrow { color: #7ddce6; }
 .authors-section .section-intro { color: #aeb9cc; }
-.authors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 35px; }
+.authors-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 35px;
+}
 .author-card { padding: 22px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.045); border-radius: 18px; }
 .avatar { width: 66px; height: 66px; display: grid; place-items: center; border-radius: 50%; background: #2b3452; color: #9ee8ef; font-weight: 900; margin-bottom: 15px; }
 .author-card h3 { margin: 5px 0; }
@@ -191,6 +196,11 @@ tbody tr:last-child td { border-bottom: 0; }
 .footer-grid strong { color: #fff; }
 .footer-grid a { color: #7ddce6; text-decoration: none; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); margin-top: 30px; padding-top: 18px; font-size: .75rem; }
+@media (max-width: 1100px) {
+  .authors-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 @media (max-width: 900px) {
   .hero-grid, .two-col, .recommendation-box { grid-template-columns: 1fr; }
   .experiment-grid { grid-template-columns: 1fr; }
