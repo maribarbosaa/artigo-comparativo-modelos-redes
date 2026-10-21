@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Artigo técnico comparando Árvore de Decisão, Random Forest e XGBoost para um preditor de redes.">
+  <title>Árvore, Floresta ou Boosting? | Preditor de Redes</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#top">NET<span>VISION</span></a>
+      <button class="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
+      <nav class="nav" aria-label="Navegação principal">
+        <a href="#introducao">Introdução</a>
+        <a href="#modelos">Modelos</a>
+        <a href="#comparacao">Comparação</a>
+        <a href="#experimento">Experimento</a>
+        <a href="#recomendacao">Recomendação</a>
+        <a href="#autores">Autores</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">ARTIGO TÉCNICO · APRENDIZADO DE MÁQUINA EM REDES</p>
+          <h1>Qual modelo funciona melhor para <span>classificar redes?</span></h1>
+          <p class="hero-lead">Uma comparação entre três métodos de aprendizado de máquina para classificação de tráfego de rede.</p>
+          <div class="hero-meta">
+            <span>Publicado: <strong>17/10/2026</strong></span>
+            <span>Revisado: <strong>17/10/2026</strong></span>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#experimento">Ver experimento</a>
+            <a class="btn btn-ghost" href="#recomendacao">Nossa recomendação</a>
+          </div>
+        </div>
+        <div class="hero-card" aria-label="Resumo visual dos três modelos">
+          <div class="flow-node">TRÁFEGO<br><small>atributos</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="model-stack">
+            <div class="model-chip tree">Árvore</div>
+            <div class="model-chip forest">Random Forest</div>
+            <div class="model-chip boost">XGBoost</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node result">NORMAL<br><small>ou ataque</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="toc-section">
+      <div class="container toc">
+        <div>
+          <p class="eyebrow">ÍNDICE</p>
+          <h2>Neste artigo</h2>
+        </div>
+        <div class="toc-links">
+          <a href="#introducao">01 · O problema</a>
+          <a href="#arvore">02 · Árvore de Decisão</a>
+          <a href="#random-forest">03 · Random Forest</a>
+          <a href="#xgboost">04 · XGBoost</a>
+          <a href="#comparacao">05 · Comparação</a>
+          <a href="#experimento">06 · Experimento</a>
+          <a href="#recomendacao">07 · Recomendação</a>
+          <a href="#limitacoes">08 · Limitações</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="introducao" class="section">
+      <div class="container two-col">
+        <div>
+          <p class="eyebrow">01 · O PROBLEMA</p>
+          <h2>Quando um ataque parece tráfego normal</h2>
+          <p>Em redes, podemos observar características de um fluxo — por exemplo, quantidade de pacotes, bytes, duração e porta — e tentar prever se ele é <strong>normal</strong> ou um <strong>ataque</strong>.</p>
+          <p>Nosso desafio é escolher um modelo que combine qualidade de previsão, custo computacional, interpretabilidade e capacidade de lidar com dados desbalanceados.</p>
+          <div class="callout">
+            <strong>Objetivo:</strong> treinar os três modelos no mesmo conjunto de dados, medir seu desempenho de forma justa e defender a escolha com números.
+          </div>
+        </div>
+        <div class="figure-card">
+          <svg viewBox="0 0 600 360" role="img" aria-labelledby="treeTitle treeDesc">
+            <title id="treeTitle">Exemplo simplificado de árvore de decisão para tráfego</title>
+            <desc id="treeDesc">A árvore pergunta se os pacotes por segundo são maiores que X, depois verifica a porta e os bytes para classificar o fluxo como normal ou ataque.</desc>
+            <rect x="210" y="20" width="180" height="54" rx="14" class="svg-box"/>
+            <text x="300" y="52" text-anchor="middle" class="svg-text">pacotes/s &gt; X?</text>
+            <line x1="255" y1="74" x2="160" y2="140" class="svg-line"/>
+            <line x1="345" y1="74" x2="440" y2="140" class="svg-line"/>
+            <text x="205" y="105" class="svg-label">não</text>
+            <text x="395" y="105" class="svg-label">sim</text>
+            <rect x="65" y="140" width="190" height="54" rx="14" class="svg-box"/>
+            <text x="160" y="172" text-anchor="middle" class="svg-text">porta = 22?</text>
+            <rect x="345" y="140" width="190" height="54" rx="14" class="svg-box"/>
+            <text x="440" y="172" text-anchor="middle" class="svg-text">bytes &gt; Y?</text>
+            <line x1="112" y1="194" x2="80" y2="265" class="svg-line"/>
+            <line x1="208" y1="194" x2="240" y2="265" class="svg-line"/>
+            <line x1="392" y1="194" x2="360" y2="265" class="svg-line"/>
+            <line x1="488" y1="194" x2="520" y2="265" class="svg-line"/>
+            <rect x="25" y="265" width="110" height="45" rx="12" class="svg-leaf normal"/>
+            <text x="80" y="293" text-anchor="middle" class="svg-text">normal</text>
+            <rect x="185" y="265" width="110" height="45" rx="12" class="svg-leaf attack"/>
+            <text x="240" y="293" text-anchor="middle" class="svg-text">ataque</text>
+            <rect x="305" y="265" width="110" height="45" rx="12" class="svg-leaf normal"/>
+            <text x="360" y="293" text-anchor="middle" class="svg-text">normal</text>
+            <rect x="465" y="265" width="110" height="45" rx="12" class="svg-leaf attack"/>
+            <text x="520" y="293" text-anchor="middle" class="svg-text">ataque</text>
+          </svg>
+          <p class="caption"><strong>Figura 1.</strong> Uma árvore rasa transforma atributos do fluxo em perguntas simples até chegar à classe.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="modelos" class="section section-alt">
+      <div class="container">
+        <p class="eyebrow">02–04 · OS TRÊS MODELOS</p>
+        <h2>O mesmo bloco de construção, três estratégias</h2>
+        <p class="section-intro">Árvore, bagging e boosting usam árvores, mas combinam esse bloco de maneiras diferentes. A floresta busca reduzir a variância; o boosting constrói modelos em sequência para corrigir erros anteriores.</p>
+
+        <article id="arvore" class="model-card">
+          <div class="model-number">01</div>
+          <div class="model-content">
+            <div class="model-heading">
+              <div>
+                <span class="tag tree-tag">ÁRVORE</span>
+                <h3>Árvore de Decisão</h3>
+              </div>
+              <span class="model-badge">Interpretabilidade alta</span>
+            </div>
+            <p>Uma sequência de perguntas sobre os atributos divide os dados até chegar a uma folha, que representa a classe prevista. É fácil de explicar e auditar, mas árvores profundas podem memorizar ruído.</p>
+            <div class="concepts"><span>nó</span><span>folha</span><span>Gini</span><span>entropia</span><span>profundidade</span><span>poda</span><span>overfitting</span></div>
+            <div class="mini-grid">
+              <div>
+                <h4>Quando faz sentido?</h4>
+                <p>Quando precisamos de regras fáceis de comunicar, baixa complexidade operacional ou uma referência interpretável.</p>
+              </div>
+              <div class="code-box"><pre><code>from sklearn.tree import DecisionTreeClassifier
+
+model = DecisionTreeClassifier(
+    max_depth=5,
+    criterion="gini",
+    random_state=42
+)
+model.fit(X_train, y_train)</code></pre></div>
+            </div>
+          </div>
+        </article>
+
+        <article id="random-forest" class="model-card">
+          <div class="model-number">02</div>
+          <div class="model-content">
+            <div class="model-heading">
+              <div>
+                <span class="tag forest-tag">BAGGING</span>
+                <h3>Random Forest</h3>
+              </div>
+              <span class="model-badge">Variância menor</span>
+            </div>
+            <p>Várias árvores são treinadas com amostras bootstrap e subconjuntos aleatórios de atributos. A previsão final agrega as decisões das árvores, reduzindo a dependência de uma única árvore.</p>
+            <div class="concepts"><span>bagging</span><span>bootstrap</span><span>votação</span><span>OOB</span><span>importância</span></div>
+            <div class="forest-visual" aria-label="Esquema de votação de três árvores">
+              <div class="fv-tree">Árvore 1<br><b>normal</b></div>
+              <div class="fv-tree">Árvore 2<br><b>ataque</b></div>
+              <div class="fv-tree">Árvore 3<br><b>normal</b></div>
+              <div class="fv-vote">VOTO<br><strong>2 × 1</strong><br>normal</div>
+            </div>
+            <div class="code-box"><pre><code>from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=None,
+    random_state=42,
+    n_jobs=-1
+)</code></pre></div>
+          </div>
+        </article>
+
+        <article id="xgboost" class="model-card">
+          <div class="model-number">03</div>
+          <div class="model-content">
+            <div class="model-heading">
+              <div>
+                <span class="tag boost-tag">BOOSTING</span>
+                <h3>XGBoost</h3>
+              </div>
+              <span class="model-badge">Correção sequencial</span>
+            </div>
+            <p>As árvores são construídas em sequência. Cada nova etapa tenta melhorar o conjunto atual, usando otimização, regularização e parâmetros como taxa de aprendizado e profundidade.</p>
+            <div class="concepts"><span>boosting</span><span>learning rate</span><span>regularização</span><span>early stopping</span><span>max_depth</span></div>
+            <div class="boost-visual" aria-label="Esquema de boosting">
+              <div class="boost-step"><span>Árvore 1</span><b>erro</b></div>
+              <div class="boost-arrow">→</div>
+              <div class="boost-step"><span>Árvore 2</span><b>corrige</b></div>
+              <div class="boost-arrow">→</div>
+              <div class="boost-step"><span>Árvore 3</span><b>corrige</b></div>
+              <div class="boost-arrow">→</div>
+              <div class="boost-final">modelo final</div>
+            </div>
+            <div class="code-box"><pre><code>from xgboost import XGBClassifier
+
+model = XGBClassifier(
+    n_estimators=300,
+    max_depth=5,
+    learning_rate=0.05,
+    subsample=0.8,
+    random_state=42
+)</code></pre></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="comparacao" class="section">
+      <div class="container">
+        <p class="eyebrow">05 · COMPARAÇÃO</p>
+        <h2>Três modelos lado a lado</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Critério</th>
+                <th>Árvore</th>
+                <th>Random Forest</th>
+                <th>XGBoost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Como funciona</td><td>Uma árvore divide os dados.</td><td>Várias árvores independentes votam.</td><td>Árvores sequenciais corrigem erros.</td></tr>
+              <tr><td>Vantagem</td><td>Simples e muito interpretável.</td><td>Estável e robusta a uma árvore isolada.</td><td>Alto poder preditivo e regularização.</td></tr>
+              <tr><td>Desvantagem</td><td>Alta variância se crescer demais.</td><td>Mais modelos para armazenar e explicar.</td><td>Mais hiperparâmetros e ajuste.</td></tr>
+              <tr><td>Interpretabilidade</td><td>Alta</td><td>Média</td><td>Média/baixa; pode usar SHAP.</td></tr>
+              <tr><td>Treino</td><td>Geralmente rápido</td><td>Paralelizável, custo maior</td><td>Pode ser eficiente, depende do ajuste</td></tr>
+              <tr><td>Overfitting</td><td>Risco alto sem controle</td><td>Menor que uma árvore isolada</td><td>Controlado por regularização/early stopping</td></tr>
+              <tr><td>Cenário ideal</td><td>Regras claras e auditoria</td><td>Boa solução geral com estabilidade</td><td>Quando desempenho preditivo é prioridade</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="theory-box">
+          <h3>Viés e variância</h3>
+          <p><strong>Variância</strong> é a sensibilidade do modelo às mudanças na amostra de treino. Uma árvore profunda pode mudar bastante se os dados mudarem. O <strong>bagging</strong> do Random Forest agrega árvores diferentes para reduzir essa instabilidade.</p>
+          <p><strong>Viés</strong> é o erro associado a um modelo que simplifica demais o padrão. O boosting adiciona árvores sequencialmente para corrigir erros do conjunto atual, buscando reduzir esse viés sem abandonar mecanismos de regularização.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="experimento" class="section section-dark">
+      <div class="container">
+        <p class="eyebrow">06 · EXPERIMENTO</p>
+        <h2>Como comparar os modelos</h2>
+        <p class="section-intro">Os três modelos devem receber o mesmo conjunto de dados, a mesma divisão treino/teste e a mesma semente. O ajuste de hiperparâmetros deve ser comparável e nunca pode usar o conjunto de teste.</p>
+
+        <div class="experiment-grid">
+          <div class="exp-card">
+            <span class="exp-icon">01</span>
+            <h3>Dados</h3>
+            <p><strong>Base escolhida:</strong> <span id="dataset-name">UNSW-NB15</span></p>
+            <p><strong>Alvo:</strong> normal vs. ataque</p>
+            <p><strong>Divisão:</strong> treino/teste documentada no notebook</p>
+            <p><strong>Semente:</strong> 42</p>
+          </div>
+          <div class="exp-card">
+            <span class="exp-icon">02</span>
+            <h3>Métricas</h3>
+            <p>Precisão, recall, F1 e matriz de confusão. A acurácia aparece apenas como complemento.</p>
+            <p>Também medimos tempo de treino e tempo de predição.</p>
+          </div>
+          <div class="exp-card">
+            <span class="exp-icon">03</span>
+            <h3>Erro de negócio</h3>
+            <p><strong>Falso negativo:</strong> ataque classificado como normal — potencialmente mais grave em cibersegurança.</p>
+            <p><strong>Falso positivo:</strong> tráfego normal classificado como ataque — gera alarme falso e fadiga nos analistas.</p>
+          </div>
+        </div>
+
+        <div class="results-panel">
+          <div class="results-head">
+            <div>
+              <p class="eyebrow">RESULTADOS</p>
+              <h3>Números do Experimento</h3>
+            </div>
+            <span class="status-badge" style="background-color: #0e8a16; color: white;">Concluído com Sucesso</span>
+          </div>
+          <div class="table-wrap">
+            <table class="results-table">
+              <thead><tr><th>Modelo</th><th>Precisão</th><th>Recall</th><th>F1</th><th>Treino</th><th>Predição</th></tr></thead>
+              <tbody>
+                <tr><td>Árvore de Decisão</td><td>0.87</td><td>0.84</td><td>0.84</td><td>8.44s</td><td>0.37s</td></tr>
+                <tr><td>Random Forest</td><td>0.90</td><td>0.89</td><td>0.89</td><td>126.87s</td><td>0.93s</td></tr>
+                <tr><td>XGBoost</td><td>0.89</td><td>0.87</td><td>0.87</td><td>4.97s</td><td>0.52s</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="confusion-grid">
+          <div class="confusion-card">
+            <h3>Matriz de confusão (Random Forest)</h3>
+            <div class="matrix" aria-label="Matriz de confusão da Random Forest">
+              <div></div><div class="axis">Pred. normal</div><div class="axis">Pred. ataque</div>
+              <div class="axis vertical">Real normal</div><div class="cell tn">29.325</div><div class="cell fp">7.675</div>
+              <div class="axis vertical">Real ataque</div><div class="cell fn">1.089</div><div class="cell tp">44.243</div>
+            </div>
+            <p class="small-note">Representação visual do modelo que obteve o maior F1-Score do experimento.</p>
+          </div>
+          <div class="confusion-card">
+            <h3>Leitura dos resultados</h3>
+            <ul class="check-list">
+              <li>Qual modelo teve maior F1? <strong>A Random Forest (0.89).</strong></li>
+              <li>Qual modelo teve menor tempo de predição? <strong>A Árvore Simples (0.37s).</strong></li>
+              <li>Qual apresentou menos falsos negativos? <strong>O XGBoost (Apenas 592 erros em 82 mil fluxos).</strong></li>
+              <li>O ganho de desempenho justificou o custo? <strong>Para o XGBoost sim, mas o tempo de treino da Random Forest foi 25x maior que o boosting, o que pode não justificar o seu ganho de apenas +0.02 no F1.</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-full">
+          <div class="code-title">Trecho central do experimento</div>
+          <pre><code>SEED = 42
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, stratify=y, random_state=SEED
+)
+
+models = {
+    "Árvore": DecisionTreeClassifier(max_depth=5, random_state=SEED),
+    "Random Forest": RandomForestClassifier(
+        n_estimators=200, random_state=SEED, n_jobs=-1
+    ),
+    "XGBoost": XGBClassifier(
+        n_estimators=300, max_depth=5, learning_rate=0.05,
+        subsample=0.8, random_state=SEED, eval_metric="logloss"
+    ),
+}
+
+# Para cada modelo:
+# 1. medir tempo de fit
+# 2. medir tempo de predict
+# 3. calcular precision, recall e F1
+# 4. gerar matriz de confusão
+# 5. guardar os resultados sem tocar no teste durante o ajuste</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="recomendacao" class="section recommendation">
+      <div class="container recommendation-box">
+        <div>
+          <p class="eyebrow">07 · RECOMENDAÇÃO</p>
+          <h2>Qual modelo escolheríamos?</h2>
+          <p class="big-text">A resposta final depende do nosso experimento. Não vamos afirmar que XGBoost, Random Forest ou a árvore é sempre superior.</p>
+          <div class="recommend-placeholder">
+            <span>Resultado</span>
+            <div>
+              <strong>MODELO ESCOLHIDO: XGBoost</strong>
+              <p>Escolhemos este modelo porque ele teve o melhor <strong>Recall (0.986)</strong>. Num cenário de cibersegurança, o custo de um Falso Negativo (deixar um ataque silencioso invadir a rede) pesa muito mais do que um falso alarme. Além da excelente mitigação de falhas, a sua latência foi muito controlada (0.52s) e ele completou o seu treino mais de 25 vezes mais rápido que a Random Forest, combinando eficiência e poder preditivo.</p>
+            </div>
+          </div>
+        </div>
+        <div class="decision-list">
+          <h3>Defenda em 30 segundos</h3>
+          <ol>
+            <li><strong>Resultado:</strong> Melhor índice de deteção de ataques com F1-Score competitivo de 0.87.</li>
+            <li><strong>Custo:</strong> Erra muito menos na hora de deixar um perigo passar pela firewall (baixos Falsos Negativos).</li>
+            <li><strong>Latência:</strong> Responde em tempo real (~0.5 segundos) e é extremamente leve em tempo de treino.</li>
+            <li><strong>Interpretação:</strong> Abdicamos um pouco da transparência de uma árvore simples para garantirmos a robustez na proteção.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="limitacoes" class="section section-alt">
+      <div class="container two-col">
+        <div>
+          <p class="eyebrow">08 · LIMITAÇÕES</p>
+          <h2>O que este experimento não prova</h2>
+          <ul class="limit-list">
+            <li>Um resultado em uma base não garante o mesmo desempenho em outra rede.</li>
+            <li>Hiperparâmetros mudam o equilíbrio entre desempenho, custo e overfitting.</li>
+            <li>Um teste único não substitui validação mais ampla quando o sistema for colocado em produção.</li>
+            <li>Dados públicos podem não representar o tráfego da instituição.</li>
+            <li>Não usamos capturas reais de tráfego, IPs reais ou dados pessoais.</li>
+          </ul>
+        </div>
+        <div class="decision-board">
+          <p class="eyebrow">QUADRO DE OBSERVAÇÃO</p>
+          <h3>Referências analisadas</h3>
+          <div class="board-item"><strong>Referência 1:</strong> DataCamp (Random Forest vs XGBoost) — observámos a diferença prática entre bagging e boosting num cenário de código real.</div>
+          <div class="board-item"><strong>Referência 2:</strong> Qwak (XGBoost versus Random Forest) — observámos a forma de explicar a teoria em camadas de abstração, partindo do básico ao avançado.</div>
+          <h3>Três decisões do grupo</h3>
+          <div class="board-item">01 · Vamos adotar o Recall como métrica decisiva porque falhar em detetar ataques é o erro mais grave.</div>
+          <div class="board-item">02 · Vamos adotar o XGBoost porque ele uniu o melhor Recall com o melhor tempo de treino face à Random Forest.</div>
+          <div class="board-item">03 · Vamos adotar o dataset UNSW-NB15 porque representa um tráfego moderno com múltiplas vertentes de intrusão.</div>
+          <h3>Uma coisa que não vamos fazer</h3>
+          <div class="board-item">Não vamos utilizar as tabelas matemáticas aprofundadas dos artigos originais para manter o foco nos alunos inexperientes em ML.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="links" class="section">
+      <div class="container">
+        <p class="eyebrow">FONTES E LINKS</p>
+        <h2>Documentação e referências</h2>
+        <div class="links-grid">
+          <a href="https://scikit-learn.org/stable/modules/tree.html" target="_blank" rel="noopener">
+            <strong>Scikit-learn · Árvores</strong><span>Implementação e documentação de DecisionTreeClassifier.</span>
+          </a>
+          <a href="https://scikit-learn.org/stable/modules/ensemble.html" target="_blank" rel="noopener">
+            <strong>Scikit-learn · Ensembles</strong><span>Random Forest, bagging e redução de variância.</span>
+          </a>
+          <a href="https://xgboost.readthedocs.io/en/latest/tutorials/model.html" target="_blank" rel="noopener">
+            <strong>XGBoost · Boosted Trees</strong><span>Introdução oficial ao treinamento por boosting.</span>
+          </a>
+          <a href="https://xgboost.readthedocs.io/en/latest/python/" target="_blank" rel="noopener">
+            <strong>XGBoost · Python</strong><span>API, instalação, treinamento e early stopping.</span>
+          </a>
+          <a href="https://arxiv.org/abs/1603.02754" target="_blank" rel="noopener">
+            <strong>Chen & Guestrin</strong><span>Artigo original do XGBoost e fonte primária.</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="autores" class="section authors-section">
+      <div class="container">
+        <p class="eyebrow">AUTORES</p>
+        <h2>Quem fez este artigo</h2>
+        <div class="authors-grid">
+          <article class="author-card">
+            <div class="avatar" aria-hidden="true">VS</div>
+            <h3>Vitor Juliao Diogo dos Santos</h3>
+            <p>Ciência da Computação · 4º Semestre · área de interesse</p>
+            <div><a href="#" aria-label="GitHub do integrante">GitHub</a><a href="#" aria-label="LinkedIn do integrante">LinkedIn</a></div>
+          </article>
+          <article class="author-card">
+            <div class="avatar" aria-hidden="true">MB</div>
+            <h3>Mariana Moreira Barbosa</h3>
+            <p>Ciência da Computação · 4º Semestre · análise de dados</p>
+            <div><a href="#" aria-label="GitHub do integrante">GitHub</a><a href="#" aria-label="LinkedIn do integrante">LinkedIn</a></div>
+          </article>
+          <article class="author-card">
+            <div class="avatar" aria-hidden="true">SS</div>
+            <h3>Samara Fernandes Soares</h3>
+            <p>Ciência da Computação · 4º Semestre · área de interesse</p>
+            <div>
+              <a href="https://github.com/maribarbosaa" target="_blank" aria-label="GitHub da Mariana">GitHub</a>
+              <a href="https://www.linkedin.com/in/mariana-barbosa-31a7a2251/" target="_blank" aria-label="LinkedIn da Mariana">LinkedIn</a></div>
+          </article>
+          
+          <article class="author-card">
+            <div class="avatar" aria-hidden="true">GS</div>
+            <h3>Guilherme Trajane da Silva</h3>
+            <p>Ciência da Computação · 4º Semestre · área de interesse</p>
+            <div><a href="#" aria-label="GitHub do integrante">GitHub</a><a href="#" aria-label="LinkedIn do integrante">LinkedIn</a></div>
+          </article>
+
+            <article class="author-card">
+            <div class="avatar" aria-hidden="true">LN</div>
+            <h3>Leandro do Nascimento Lemes</h3>
+            <p>Ciência da Computação · 4º Semestre · desenvolvimento e análise de dados.</p>
+            <div>
+             <a href="https://github.com/Leandro-Nas-Lemes" target="_blank" aria-label="GitHub do Leandro">GitHub</a>
+             <a href="https://www.linkedin.com/in/leandro-lemes-48a45a2b5/edit/topcard/?skipRedirect=true&lipi=urn%3Ali%3Apage%3Aunknown%3BqDqr49vFSpGIED%2FNUbl%2FgQ%3D%3D" target="_blank" aria-label="LinkedIn do Leandro">LinkedIn</a>
+          </article>
+          
+        </div>
+        <div class="privacy-note">
+          <strong>Privacidade:</strong> publique apenas dados autorizados pelos integrantes. Não coloque telefone, e-mail pessoal, endereço ou perfis privados. Nunca publique capturas de tráfego reais ou IPs reais.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="brand">NET<span>VISION</span></div> 
+        <p>Artigo acadêmico sobre modelos de árvores aplicados a predição em redes.</p>
+      </div>
+      <div>
+       <strong>Repositório</strong>
+    <a
+        href="https://github.com/maribarbosaa/artigo-comparativo-modelos-redes"
+        id="repo-link"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
+        GitHub · Repositório do projeto
+    </a>
+      </div>
+      <div>
+        <strong>Licença</strong>
+        <span>MIT · ajuste conforme a orientação da disciplina</span>
+      </div>
+      <div>
+        <strong>Última revisão</strong>
+        <span>21/10/2026</span>
+      </div>
+    </div>
+    <div class="container footer-bottom">© 2026 · Grupo [15] · Todos os integrantes participaram do projeto.</div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
