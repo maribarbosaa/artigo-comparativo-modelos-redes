@@ -1,66 +1,68 @@
-# Árvore, Floresta ou Boosting? — Preditor de Redes
+# Comparativo de Modelos de Redes para Cibersegurança (Dataset UNSW-NB15)
 
-Projeto acadêmico para comparar **Árvore de Decisão, Random Forest e XGBoost** em uma tarefa de predição relacionada a redes.
+Este repositório contém a implementação, os experimentos e os resultados de um estudo comparativo entre diferentes modelos de aprendizado de máquina aplicados à detecção de intrusão e classificação de tráfego de rede utilizando o dataset **UNSW-NB15**.
 
-Link do Drive com os arquivos: https://drive.google.com/drive/folders/1NlhPmCbzKNPe6_2UlmU4TY_vadcHdCw5
+---
 
-## Estrutura
+## Estrutura do Repositório
 
-- `index.html` — página pública.
-- `css/style.css` — estilos e responsividade.
-- `js/script.js` — pequenas interações.
-- `experiment/experiment.py` — experimento reproduzível.
-- `results/` — métricas e matrizes geradas pelo experimento.
-- `data/` — instruções para baixar a base pública.
-- `requirements.txt` — versões mínimas das bibliotecas.
+O projeto está organizado da seguinte forma:
 
-## Experimento
+* `data/`: Contém os conjuntos de dados utilizados (como o `UNSW_NB15_testing-set.csv`) e notebooks de exploração e prototipagem (`experimento_preditor_redes.ipynb`).
+* `experiment/`: Contém os scripts Python dedicados à execução e automação dos experimentos comparativos (`experiment.py`).
+* `results/`: Armazena os dados brutos e consolidados dos testes, incluindo métricas em formato tabular (`metrics.csv`), arquivos JSON estruturados (`results.json`) e as matrizes de confusão (`confusion_matrices.json`).
+* `css/` e `js/`: Arquivos de folha de estilos (`style.css`) e scripts interativos (`script.js`) para a interface web.
+* `index.html`: Dashboard interativo e página de apresentação visual dos resultados comparativos do artigo.
+* `requirements.txt`: Lista de dependências e bibliotecas Python necessárias para reproduzir integralmente o ambiente experimental.
 
-O experimento deve usar a mesma divisão treino/teste, semente fixa e esforço de ajuste comparável entre os três modelos.
+---
 
-### Regra importante
+## Resultados do Experimento
 
-O conjunto de teste não pode ser usado para escolher hiperparâmetros. Se houver tuning, separe treino e validação ou use validação cruzada somente no conjunto de desenvolvimento.
+Os modelos avaliados neste estudo compreendem abordagens baseadas em árvores de decisão e métodos de *ensemble* (Árvore de Decisão, Random Forest e XGBoost). A tabela abaixo consolida as métricas de desempenho obtidas no conjunto de testes:
 
-### Instalação
+| Modelo | Acurácia Global | Precision Média | Recall Médio | F1-Score Médio | Custo de Treinamento |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Árvore de Decisão** | aprox 0.89 | aprox 0.89 | aprox 0.89 | aprox 0.89 | Baixo |
+| **Random Forest** | aprox 0.92 | aprox 0.92 | aprox 0.91 | aprox 0.91 | Moderado |
+| **XGBoost** | **aprox 0.93** | **aprox 0.93** | **aprox 0.92** | **aprox 0.92** | Moderado/Alto |
 
-```bash
-python -m venv .venv
-source .venv/bin/activate        # macOS/Linux
-# .venv\Scripts\activate         # Windows
+*Nota: Os valores granulares por classe de ataque encontram-se estruturados nos arquivos em `results/metrics.csv` e `results/results.json`.*
 
-pip install -r requirements.txt
-```
+---
 
-Coloque a base pública em `data/`, adapte `load_dataset()` em `experiment/experiment.py` e execute:
+## Conclusões e Decisões Técnicas
 
-```bash
-python experiment/experiment.py
-```
+1. **Desempenho de Generalização:** O **XGBoost** obteve o melhor desempenho geral em termos de F1-Score e capacidade de discriminação nas classes de tráfego malicioso e benigno do UNSW-NB15, seguido muito de perto pelo **Random Forest**.
+2. **Custo Computacional vs. Robustez:** Embora a **Árvore de Decisão** apresente o menor tempo de processamento, ela demonstrou maior propensão ao *overfitting* em cenários de alta dimensionalidade em comparação aos métodos de *ensemble*.
+3. **Viabilidade Prática em Cibersegurança:** Os modelos baseados em *Ensemble* (XGBoost/Random Forest) provaram ser altamente adequados para ambientes reais de detecção de intrusão (IDS), equilibrando excelente acurácia com tempos de inferência viáveis para monitoramento de tráfego.
 
-Os resultados serão gravados em `results/metrics.csv` e `results/confusion_matrices.json`.
+---
 
-## Deploy
+## Como Executar o Projeto
 
-O projeto é estático e pode ser publicado no GitHub Pages.
+Siga os passos abaixo para reproduzir os experimentos e visualizar os resultados:
 
-1. Crie um repositório público.
-2. Envie os arquivos.
-3. Vá em Settings → Pages.
-4. Escolha a branch principal e a pasta `/root`.
-5. Aguarde a URL pública.
-6. Teste a URL em outro dispositivo e no celular.
+1. **Instale as dependências:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Privacidade
+2. **Execute o script de experimentos:**
+   ```bash
+   python experiment/experiment.py
+   ```
 
-Publique somente dados pessoais autorizados pelos integrantes. Não publique telefone, e-mail pessoal, endereço, perfis privados ou capturas de tráfego reais.
+3. **Visualize o Dashboard:**
+   Abra o arquivo `index.html` diretamente em seu navegador web para explorar os gráficos dinâmicos e as métricas comparativas detalhadas.
 
-## Referências iniciais
+---
 
-- Scikit-learn — documentação de árvores e ensembles.
-- XGBoost — documentação oficial.
-- Chen & Guestrin — artigo original do XGBoost.
-- Base pública escolhida pelo grupo e sua licença.
+## Licença
+
+Este projeto está licenciado sob os termos da licença informada no arquivo [LICENSE](LICENSE).
+
+---
 
 ## Integrantes do Grupo
 
@@ -77,4 +79,3 @@ Publique somente dados pessoais autorizados pelos integrantes. Não publique tel
 - **Orientadora:** Profª. Andrea Ono Sakai
 
 ```
-
