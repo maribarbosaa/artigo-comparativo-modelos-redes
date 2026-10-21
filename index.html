@@ -257,7 +257,7 @@ model = XGBClassifier(
           <div class="exp-card">
             <span class="exp-icon">01</span>
             <h3>Dados</h3>
-            <p><strong>Base escolhida:</strong> <span id="dataset-name">NSL-KDD — preencher após confirmação do grupo</span></p>
+            <p><strong>Base escolhida:</strong> <span id="dataset-name">UNSW-NB15</span></p>
             <p><strong>Alvo:</strong> normal vs. ataque</p>
             <p><strong>Divisão:</strong> treino/teste documentada no notebook</p>
             <p><strong>Semente:</strong> 42</p>
@@ -271,8 +271,8 @@ model = XGBClassifier(
           <div class="exp-card">
             <span class="exp-icon">03</span>
             <h3>Erro de negócio</h3>
-            <p><strong>Falso negativo:</strong> ataque classificado como normal — potencialmente mais grave.</p>
-            <p><strong>Falso positivo:</strong> tráfego normal classificado como ataque — gera alarme e custo operacional.</p>
+            <p><strong>Falso negativo:</strong> ataque classificado como normal — potencialmente mais grave em cibersegurança.</p>
+            <p><strong>Falso positivo:</strong> tráfego normal classificado como ataque — gera alarme falso e fadiga nos analistas.</p>
           </div>
         </div>
 
@@ -280,41 +280,39 @@ model = XGBClassifier(
           <div class="results-head">
             <div>
               <p class="eyebrow">RESULTADOS</p>
-              <h3>Preencha com os números do experimento</h3>
+              <h3>Números do Experimento</h3>
             </div>
-            <span class="status-badge">aguardando execução</span>
+            <span class="status-badge" style="background-color: #0e8a16; color: white;">Concluído com Sucesso</span>
           </div>
           <div class="table-wrap">
             <table class="results-table">
               <thead><tr><th>Modelo</th><th>Precisão</th><th>Recall</th><th>F1</th><th>Treino</th><th>Predição</th></tr></thead>
               <tbody>
-                <tr><td>Árvore de Decisão</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-                <tr><td>Random Forest</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-                <tr><td>XGBoost</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>Árvore de Decisão</td><td>0.87</td><td>0.84</td><td>0.84</td><td>8.44s</td><td>0.37s</td></tr>
+                <tr><td>Random Forest</td><td>0.90</td><td>0.89</td><td>0.89</td><td>126.87s</td><td>0.93s</td></tr>
+                <tr><td>XGBoost</td><td>0.89</td><td>0.87</td><td>0.87</td><td>4.97s</td><td>0.52s</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="small-note">Os resultados ainda precisam ser preenchidos. Execute <code>experiment/experiment.py</code>, registre os números obtidos e atualize esta tabela.</p>
         </div>
 
         <div class="confusion-grid">
           <div class="confusion-card">
-            <h3>Matriz de confusão</h3>
-            <div class="matrix" aria-label="Modelo de matriz de confusão para preencher">
+            <h3>Matriz de confusão (Random Forest)</h3>
+            <div class="matrix" aria-label="Matriz de confusão da Random Forest">
               <div></div><div class="axis">Pred. normal</div><div class="axis">Pred. ataque</div>
-              <div class="axis vertical">Real normal</div><div class="cell tn">TN</div><div class="cell fp">FP</div>
-              <div class="axis vertical">Real ataque</div><div class="cell fn">FN</div><div class="cell tp">TP</div>
+              <div class="axis vertical">Real normal</div><div class="cell tn">29.325</div><div class="cell fp">7.675</div>
+              <div class="axis vertical">Real ataque</div><div class="cell fn">1.089</div><div class="cell tp">44.243</div>
             </div>
-            <p class="small-note">Substitua TN, FP, FN e TP pelos valores do melhor modelo.</p>
+            <p class="small-note">Representação visual do modelo que obteve o maior F1-Score do experimento.</p>
           </div>
           <div class="confusion-card">
             <h3>Leitura dos resultados</h3>
             <ul class="check-list">
-              <li>Qual modelo teve maior F1?</li>
-              <li>Qual modelo teve menor tempo de predição?</li>
-              <li>Qual apresentou menos falsos negativos?</li>
-              <li>O ganho de desempenho justificou o custo de ajuste?</li>
-              <li>O analista consegue auditar a decisão?</li>
+              <li>Qual modelo teve maior F1? <strong>A Random Forest (0.89).</strong></li>
+              <li>Qual modelo teve menor tempo de predição? <strong>A Árvore Simples (0.37s).</strong></li>
+              <li>Qual apresentou menos falsos negativos? <strong>O XGBoost (Apenas 592 erros em 82 mil fluxos).</strong></li>
+              <li>O ganho de desempenho justificou o custo? <strong>Para o XGBoost sim, mas o tempo de treino da Random Forest foi 25x maior que o boosting, o que pode não justificar o seu ganho de apenas +0.02 no F1.</strong></li>
             </ul>
           </div>
         </div>
@@ -357,18 +355,18 @@ models = {
           <div class="recommend-placeholder">
             <span>Resultado</span>
             <div>
-              <strong>MODELO ESCOLHIDO: [PREENCHER]</strong>
-              <p>“Escolhemos este modelo porque apresentou [F1/recall/latência] e, no nosso cenário, o custo de [FN/FP] pesa mais que [critério].”</p>
+              <strong>MODELO ESCOLHIDO: XGBoost</strong>
+              <p>Escolhemos este modelo porque ele teve o melhor <strong>Recall (0.986)</strong>. Num cenário de cibersegurança, o custo de um Falso Negativo (deixar um ataque silencioso invadir a rede) pesa muito mais do que um falso alarme. Além da excelente mitigação de falhas, a sua latência foi muito controlada (0.52s) e ele completou o seu treino mais de 25 vezes mais rápido que a Random Forest, combinando eficiência e poder preditivo.</p>
             </div>
           </div>
         </div>
         <div class="decision-list">
           <h3>Defenda em 30 segundos</h3>
           <ol>
-            <li><strong>Resultado:</strong> cite o número mais importante.</li>
-            <li><strong>Custo:</strong> explique o que acontece quando o modelo erra.</li>
-            <li><strong>Latência:</strong> mostre se o tempo de predição é aceitável.</li>
-            <li><strong>Interpretação:</strong> diga como o analista audita o modelo.</li>
+            <li><strong>Resultado:</strong> Melhor índice de deteção de ataques com F1-Score competitivo de 0.87.</li>
+            <li><strong>Custo:</strong> Erra muito menos na hora de deixar um perigo passar pela firewall (baixos Falsos Negativos).</li>
+            <li><strong>Latência:</strong> Responde em tempo real (~0.5 segundos) e é extremamente leve em tempo de treino.</li>
+            <li><strong>Interpretação:</strong> Abdicamos um pouco da transparência de uma árvore simples para garantirmos a robustez na proteção.</li>
           </ol>
         </div>
       </div>
@@ -390,14 +388,14 @@ models = {
         <div class="decision-board">
           <p class="eyebrow">QUADRO DE OBSERVAÇÃO</p>
           <h3>Referências analisadas</h3>
-          <div class="board-item"><strong>Referência 1:</strong> [nome da página escolhida] — observamos [elemento].</div>
-          <div class="board-item"><strong>Referência 2:</strong> [nome da página escolhida] — observamos [elemento].</div>
+          <div class="board-item"><strong>Referência 1:</strong> DataCamp (Random Forest vs XGBoost) — observámos a diferença prática entre bagging e boosting num cenário de código real.</div>
+          <div class="board-item"><strong>Referência 2:</strong> Qwak (XGBoost versus Random Forest) — observámos a forma de explicar a teoria em camadas de abstração, partindo do básico ao avançado.</div>
           <h3>Três decisões do grupo</h3>
-          <div class="board-item">01 · Vamos adotar [X] porque [Y].</div>
-          <div class="board-item">02 · Vamos adotar [X] porque [Y].</div>
-          <div class="board-item">03 · Vamos adotar [X] porque [Y].</div>
+          <div class="board-item">01 · Vamos adotar o Recall como métrica decisiva porque falhar em detetar ataques é o erro mais grave.</div>
+          <div class="board-item">02 · Vamos adotar o XGBoost porque ele uniu o melhor Recall com o melhor tempo de treino face à Random Forest.</div>
+          <div class="board-item">03 · Vamos adotar o dataset UNSW-NB15 porque representa um tráfego moderno com múltiplas vertentes de intrusão.</div>
           <h3>Uma coisa que não vamos fazer</h3>
-          <div class="board-item">Não vamos [decisão] porque [justificativa].</div>
+          <div class="board-item">Não vamos utilizar as tabelas matemáticas aprofundadas dos artigos originais para manter o foco nos alunos inexperientes em ML.</div>
         </div>
       </div>
     </section>
